@@ -11,15 +11,60 @@ export interface FoodEntry {
     incompleteProtein: boolean;
 }
 
-// ── Workout Log Entry ────────────────────────────────────────────────
-export interface WorkoutEntry {
-    exercise: string;
-    sets: number;
+// ── Workout Templates & Sessions ─────────────────────────────────────
+export interface TemplateSet {
     reps: number;
     weight: number;
-    unit: "kg" | "lbs";
+    rir?: number;
+}
+
+export interface TemplateExercise {
+    exerciseName: string;
+    sets: TemplateSet[];
+}
+
+export interface WorkoutTemplate {
+    id: string;
+    name: string;
+    exercises: TemplateExercise[];
+}
+
+export interface ActiveWorkoutSet {
+    reps: number;
+    weight: number;
+    rir?: number;
+    completed: boolean;
+}
+
+export interface ActiveWorkoutExercise {
+    exerciseName: string;
+    sets: ActiveWorkoutSet[];
+}
+
+export interface ActiveWorkout {
+    startTime: string; // ISO string or timestamp
+    templateId?: string;
+    isEditingTemplateId?: string;
+    exercises: ActiveWorkoutExercise[];
     notes: string;
-    timestamp: string; // HH:mm
+}
+
+export interface WorkoutHistorySet {
+    reps: number;
+    weight: number;
+    rir?: number;
+}
+
+export interface WorkoutHistoryExercise {
+    exerciseName: string;
+    sets: WorkoutHistorySet[];
+}
+
+export interface WorkoutHistoryLog {
+    id: string;
+    date: string; // ISO string or formatted date
+    templateName?: string;
+    exercises: WorkoutHistoryExercise[];
 }
 
 // ── Nutrition Log Entry ──────────────────────────────────────────────
@@ -52,6 +97,9 @@ export interface FitnessTrackerSettings {
     macroGoals: MacroGoals;
     dailyNotesFolder: string;
     dailyNoteFormat: string;
+    workoutTemplates: WorkoutTemplate[];
+    activeWorkout: ActiveWorkout | null;
+    workoutHistory: WorkoutHistoryLog[];
 }
 
 export const DEFAULT_SETTINGS: FitnessTrackerSettings = {
@@ -65,4 +113,7 @@ export const DEFAULT_SETTINGS: FitnessTrackerSettings = {
     },
     dailyNotesFolder: "",
     dailyNoteFormat: "YYYY-MM-DD",
+    workoutTemplates: [],
+    activeWorkout: null,
+    workoutHistory: [],
 };

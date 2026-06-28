@@ -1,6 +1,6 @@
 import { App, TFile, TFolder, Notice } from "obsidian";
 import {
-    WorkoutEntry,
+    ActiveWorkout,
     NutritionLogEntry,
     FitnessTrackerSettings,
 } from "./types";
@@ -14,9 +14,9 @@ declare global {
 
 // ── Table Headers ────────────────────────────────────────────────────
 const WORKOUT_HEADER =
-    "| Time | Exercise | Sets×Reps | Weight | Notes |";
+    "| Time | Exercise | Sets | Weight | Notes |";
 const WORKOUT_SEPARATOR =
-    "|------|----------|-----------|--------|-------|";
+    "|------|----------|------|--------|-------|";
 
 const NUTRITION_HEADER =
     "| Time | Food | Weight | Cal | Protein | Carbs | Fat | Fiber | Sugar | Sodium |";
@@ -70,22 +70,58 @@ export class DailyNoteWriter {
         return file;
     }
 
-    // ── Workout Entries ──────────────────────────────────────────────
+    // ── Workout Sessions ─────────────────────────────────────────────
 
     /**
-     * Append a workout row to today's daily note.
+     * Append a workout session to today's daily note.
      * Creates the `## Workout` section (with table headers) if it
      * doesn't exist yet.  The workout section is always placed
      * **before** the nutrition section in the note.
      */
-    async appendWorkoutEntry(entry: WorkoutEntry): Promise<void> {
+    async appendWorkoutSession(session: ActiveWorkout, unit: "kg" | "lbs"): Promise<void> {
+        const rows: string[] = [];
+        
+        const m = window.moment(session.startTime);
+        const timeStr = m.isValid() ? m.format("h:mm A") : window.moment().format("h:mm A");
+        const notesStr = session.notes ? session.notes : "";
+
+        for (const exercise of session.exercises) {
+            const completedSets = exercise.sets.filter(s => s.completed);
+            if (completedSets.length === 0) continue;
+
+            const firstSet = completedSets[0];
+            const allIdentical = completedSets.every(s => s.reps === firstSet.reps && s.weight === firstSet.weight && s.rir === firstSet.rir);
+
+            let setsDisplay = "";
+            let weightDisplay = "";
+
+            if (allIdentical) {
+                setsDisplay = `${completedSets.length}x${firstSet.reps}`;
+                if (firstSet.rir !== undefined && firstSet.rir !== null && !isNaN(firstSet.rir)) {
+                    setsDisplay += ` (${firstSet.rir} RIR)`;
+                }
+                weightDisplay = `${firstSet.weight}${unit}`;
+            } else {
+                setsDisplay = completedSets.map(s => {
+                    let str = s.reps.toString();
+                    if (s.rir !== undefined && s.rir !== null && !isNaN(s.rir)) {
+                        str += ` (${s.rir} RIR)`;
+                    }
+                    return str;
+                }).join(", ");
+                weightDisplay = completedSets.map(s => `${s.weight}${unit}`).join(", ");
+            }
+
+            rows.push(`| ${timeStr} | ${exercise.exerciseName} | ${setsDisplay} | ${weightDisplay} | ${notesStr} |`);
+        }
+
+        if (rows.length === 0) return;
+
         const file = await this.getOrCreateDailyNote();
         let content = await this.app.vault.read(file);
 
-        const row = `| ${entry.timestamp} | ${entry.exercise} | ${entry.sets}×${entry.reps} | ${entry.weight} ${entry.unit} | ${entry.notes} |`;
-
         if (content.includes("## Workout")) {
-            // Section already exists – append the row after the last
+            // Section already exists – append the rows after the last
             // table line inside the section.
             const lines = content.split("\n");
             let insertIdx = -1;
@@ -106,9 +142,16 @@ export class DailyNoteWriter {
             }
 
             if (insertIdx !== -1) {
-                lines.splice(insertIdx + 1, 0, row);
-                content = lines.join("\n");
+                lines.splice(insertIdx + 1, 0, ...rows);
+            } else {
+                // Section exists but no table exists yet.
+                // Find where the section started and insert there.
+                const headerIdx = lines.findIndex(l => l.trim() === "## Workout");
+                if (headerIdx !== -1) {
+                    lines.splice(headerIdx + 1, 0, "", WORKOUT_HEADER, WORKOUT_SEPARATOR, ...rows);
+                }
             }
+            content = lines.join("\n");
         } else {
             // Build the whole section
             const section = [
@@ -117,7 +160,7 @@ export class DailyNoteWriter {
                 "",
                 WORKOUT_HEADER,
                 WORKOUT_SEPARATOR,
-                row,
+                ...rows,
             ].join("\n");
 
             if (content.includes("## Nutrition")) {
@@ -133,6 +176,8 @@ export class DailyNoteWriter {
 
         await this.app.vault.modify(file, content);
     }
+
+
 
     // ── Nutrition Entries ────────────────────────────────────────────
 
@@ -338,5 +383,30 @@ export class DailyNoteWriter {
         const after = lines.slice(sectionEnd);
 
         return [...before, ...rebuilt, ...after].join("\n");
+    }
+
+    async getTodayNutritionData(): Promise<{ totalCal: number, totalProtein: number, totalCarbs: number, totalFat: number } | null> {
+        try {
+            const file = await this.getOrCreateDailyNote();
+            const content = await this.app.vault.read(file);
+            
+            const lines = content.split("\n");
+            let totalsRow = lines.find(l => l.startsWith("|") && l.includes("**Totals**"));
+            if (!totalsRow) return null;
+            
+            const cells = totalsRow.split("|").map(c => c.trim()).filter(c => c.length > 0);
+            if (cells.length < 5) return null;
+            
+            const parseNum = (str: string) => parseFloat(str.replace(/[^0-9.]/g, "")) || 0;
+            
+            return {
+                totalCal: parseNum(cells[1]),
+                totalProtein: parseNum(cells[2]),
+                totalCarbs: parseNum(cells[3]),
+                totalFat: parseNum(cells[4])
+            };
+        } catch (e) {
+            return null;
+        }
     }
 }

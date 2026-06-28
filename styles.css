@@ -280,23 +280,39 @@
 
     .ft-modal .modal-content {
         overflow-y: auto;
-        padding: 12px;
+        padding: 6px;
         box-sizing: border-box;
     }
 
     .ft-tab-bar {
-        padding: 8px 12px 0;
+        padding: 4px 2px 0;
     }
 
     .ft-tab-btn {
         min-height: 48px;
-        font-size: 16px;
+        font-size: 12px;
+        padding: 4px 6px;
         flex: 1;
         justify-content: center;
+        white-space: nowrap;
     }
 
     .ft-tab-content {
-        padding: 16px 12px;
+        padding: 12px 6px;
+        padding-bottom: 50vh; /* Give space for keyboard so user can always scroll up */
+    }
+
+    .ft-sets-table {
+        overflow-x: auto;
+        padding-bottom: 8px;
+    }
+
+    .ft-set-row {
+        min-width: 350px;
+    }
+
+    .ft-exercise-block {
+        padding: 8px;
     }
 
     .ft-form-row {
@@ -327,4 +343,276 @@
     .ft-modal select {
         font-size: 16px !important;
     }
+}
+
+/* ── Active Workout & Templates ───────────────────────────────────── */
+
+.ft-start-workout-btn {
+    background: var(--interactive-accent);
+    margin-bottom: 24px;
+}
+
+.ft-templates-header {
+    margin-bottom: 12px;
+    font-size: 16px;
+}
+
+.ft-template-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ft-template-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: var(--background-secondary);
+    border-radius: 8px;
+    border: 1px solid var(--background-modifier-border);
+}
+
+.ft-template-name {
+    font-weight: 600;
+}
+
+.ft-template-list-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.ft-template-edit-btn {
+    padding: 6px 12px;
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.ft-template-start-btn {
+    padding: 6px 12px;
+    background: var(--interactive-accent);
+    color: var(--text-on-accent, #fff);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.ft-active-workout-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.ft-active-workout-title {
+    margin: 0;
+    font-size: 18px;
+}
+
+.ft-active-workout-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.ft-finish-btn {
+    background: var(--interactive-success);
+    color: var(--text-on-accent, #fff);
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+
+.ft-cancel-btn {
+    background: transparent;
+    color: var(--text-error);
+    border: 1px solid var(--text-error);
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+
+.ft-exercise-block {
+    background: var(--background-secondary);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 16px;
+    border: 1px solid var(--background-modifier-border);
+}
+
+.ft-exercise-header {
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ft-exercise-name {
+    font-weight: bold;
+    font-size: 16px;
+    color: var(--interactive-accent);
+}
+
+.ft-remove-ex-btn {
+    background: transparent;
+    color: var(--text-error);
+    border: none;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+.ft-remove-ex-btn:hover {
+    background: rgba(255, 0, 0, 0.1);
+}
+
+.ft-sets-table {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ft-set-row {
+    display: grid;
+    grid-template-columns: 32px 1fr 64px 48px 48px 32px;
+    gap: 6px;
+    align-items: center;
+    text-align: center;
+}
+
+.ft-set-header {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.ft-set-completed {
+    background: rgba(0, 200, 83, 0.1);
+}
+
+.ft-set-number {
+    cursor: pointer;
+    user-select: none;
+    font-weight: 600;
+}
+
+/* ── History Tab ──────────────────────────────────────────────────── */
+
+.ft-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ft-history-card {
+    background: var(--background-secondary);
+    border-radius: 8px;
+    border: 1px solid var(--background-modifier-border);
+    padding: 12px;
+}
+
+.ft-history-card-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.ft-history-card-date {
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: normal;
+}
+
+.ft-history-card-exercises {
+    font-size: 14px;
+    color: var(--text-normal);
+}
+
+.ft-history-card-ex {
+    margin-bottom: 4px;
+}
+
+.ft-empty-history {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 24px 0;
+}
+
+.ft-col-set {
+    font-weight: 600;
+}
+
+.ft-col-prev {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.ft-col-weight input,
+.ft-col-reps input,
+.ft-col-rir input {
+    width: 100%;
+    padding: 6px;
+    border-radius: 4px;
+    border: 1px solid var(--background-modifier-border);
+    background: var(--background-primary);
+    text-align: center;
+}
+
+.ft-set-checkbox {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+}
+
+.ft-exercise-controls {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 12px;
+}
+
+.ft-add-set-btn, .ft-remove-set-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.ft-add-set-btn:hover, .ft-remove-set-btn:hover {
+    color: var(--text-normal);
+}
+
+.ft-add-exercise-btn {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: 1px dashed var(--interactive-accent);
+    color: var(--interactive-accent);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.ft-save-template-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    color: var(--text-normal);
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 16px;
+}
+
+.ft-add-ex-wrapper {
+    margin-bottom: 16px;
+    position: relative;
 }

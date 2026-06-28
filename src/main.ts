@@ -43,7 +43,7 @@ export default class FitnessTrackerPlugin extends Plugin {
 
         const modal = new FitnessTrackerModal(
             this.app,
-            this.settings,
+            this,
             this.dailyNoteWriter,
             (exerciseName: string) => {
                 // Callback when an exercise is logged — update history

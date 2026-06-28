@@ -129,7 +129,43 @@ export class FitnessTrackerSettingTab extends PluginSettingTab {
         const foodListContainer = containerEl.createDiv();
         this.renderFoodList(foodListContainer);
 
-        // ── 4. Exercise History ──────────────────────────────────────────
+        // ── 4. Workout Templates ─────────────────────────────────────────
+
+        containerEl.createEl('h3', { text: 'Workout Templates' });
+        containerEl.createEl('p', {
+            text: 'Manage your saved workout templates.',
+            cls: 'setting-item-description',
+        });
+
+        const templates = this.plugin.settings.workoutTemplates;
+
+        if (!templates || templates.length === 0) {
+            containerEl.createEl('p', {
+                text: 'No workout templates saved yet.',
+                cls: 'setting-item-description',
+            });
+        } else {
+            for (const template of templates) {
+                new Setting(containerEl)
+                    .setName(template.name)
+                    .setDesc(`${template.exercises.length} exercises`)
+                    .addButton((btn) =>
+                        btn
+                            .setButtonText('Delete')
+                            .setWarning()
+                            .onClick(async () => {
+                                this.plugin.settings.workoutTemplates =
+                                    this.plugin.settings.workoutTemplates.filter(
+                                        (t) => t.id !== template.id
+                                    );
+                                await this.plugin.saveSettings();
+                                this.display();
+                            })
+                    );
+            }
+        }
+
+        // ── 5. Exercise History ──────────────────────────────────────────
 
         containerEl.createEl('h3', { text: 'Exercise History' });
         containerEl.createEl('p', {
