@@ -1,0 +1,330 @@
+/* ── Core Plugin - Styles ──────────────────────────────────────────────
+   All classes use the `ft-` prefix to avoid collisions with Obsidian
+   core styles.  Works with both dark and light themes via CSS vars.
+   ──────────────────────────────────────────────────────────────────── */
+
+/* ── Modal Container ──────────────────────────────────────────────── */
+
+.ft-modal {
+    width: 480px;
+}
+
+.ft-modal .modal-content {
+    padding: 0;
+}
+
+/* ── Tab Bar ──────────────────────────────────────────────────────── */
+
+.ft-tab-bar {
+    display: flex;
+    gap: 4px;
+    padding: 12px 16px 0;
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.ft-tab-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px 8px 0 0;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ft-tab-btn:hover {
+    background: var(--background-modifier-hover);
+    color: var(--text-normal);
+}
+
+.ft-tab-btn-active {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent, #fff);
+}
+
+.ft-tab-btn-active:hover {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent, #fff);
+    opacity: 0.92;
+}
+
+/* ── Tab Content Panels ───────────────────────────────────────────── */
+
+.ft-tab-content {
+    padding: 20px 16px 16px;
+}
+
+/* ── Form Groups ──────────────────────────────────────────────────── */
+
+.ft-form-group {
+    margin-bottom: 16px;
+}
+
+.ft-form-group label {
+    display: block;
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 6px;
+    color: var(--text-normal);
+}
+
+.ft-form-group input,
+.ft-form-group textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--background-modifier-border);
+    background: var(--background-primary);
+    color: var(--text-normal);
+    font-size: 16px; /* ← Prevents iOS auto-zoom */
+    font-family: inherit;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ft-form-group input:focus,
+.ft-form-group textarea:focus {
+    outline: none;
+    border-color: var(--interactive-accent);
+    box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb, 72, 120, 240), 0.18);
+}
+
+.ft-form-group textarea {
+    min-height: 60px;
+    resize: vertical;
+}
+
+/* ── Form Row (side-by-side inputs) ───────────────────────────────── */
+
+.ft-form-row {
+    display: flex;
+    gap: 12px;
+}
+
+.ft-form-row > .ft-form-group {
+    flex: 1;
+}
+
+/* ── Weight Input + Unit Label ────────────────────────────────────── */
+
+.ft-weight-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ft-weight-group input {
+    flex: 1;
+}
+
+.ft-unit-label {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+/* ── Autocomplete ─────────────────────────────────────────────────── */
+
+.ft-autocomplete-wrapper {
+    position: relative;
+}
+
+.ft-autocomplete-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.ft-autocomplete-item {
+    padding: 12px 16px;
+    min-height: 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    cursor: pointer;
+    border-bottom: 1px solid var(--background-modifier-border-hover, var(--background-modifier-border));
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.15s ease;
+}
+
+.ft-autocomplete-item:hover,
+.ft-autocomplete-item:active {
+    background: var(--background-modifier-hover);
+}
+
+.ft-autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+/* ── Food Summary (in dropdown) ───────────────────────────────────── */
+
+.ft-food-summary {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    line-height: 1.4;
+}
+
+/* ── Macro Preview Panel ──────────────────────────────────────────── */
+
+.ft-macro-preview {
+    background: var(--background-secondary);
+    border-radius: 10px;
+    padding: 16px;
+    margin: 16px 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.ft-macro-item {
+    padding: 6px 0;
+}
+
+.ft-macro-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+    line-height: 1.3;
+}
+
+.ft-macro-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-normal);
+    margin-top: 4px;
+    line-height: 1.2;
+}
+
+/* Calories — full width highlight */
+.ft-macro-item.ft-macro-highlight {
+    grid-column: span 2;
+    text-align: center;
+    padding: 8px 0 12px;
+    border-bottom: 1px solid var(--background-modifier-border);
+    margin-bottom: 4px;
+}
+
+.ft-macro-item.ft-macro-highlight .ft-macro-value {
+    font-size: 28px;
+    color: var(--interactive-accent);
+}
+
+/* Incomplete protein note */
+.ft-incomplete-note {
+    grid-column: span 2;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* ── Submit Button ────────────────────────────────────────────────── */
+
+.ft-submit-btn {
+    width: 100%;
+    padding: 12px;
+    min-height: 48px;
+    background: var(--interactive-accent);
+    color: var(--text-on-accent, #fff);
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 16px;
+    transition: opacity 0.2s ease, transform 0.1s ease;
+    font-family: inherit;
+}
+
+.ft-submit-btn:hover {
+    opacity: 0.9;
+}
+
+.ft-submit-btn:active {
+    transform: scale(0.98);
+}
+
+/* ── Mobile Responsive ────────────────────────────────────────────── */
+/* Targets iPhone 13 (390px), OPPO Reno8 Z 5G (360–412px), and all
+   other mobile viewports up to 768px wide.                           */
+
+@media (max-width: 768px) {
+    .ft-modal {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto;
+        max-height: 85vh;
+    }
+
+    .ft-modal .modal-content {
+        overflow-y: auto;
+        padding: 12px;
+        box-sizing: border-box;
+    }
+
+    .ft-tab-bar {
+        padding: 8px 12px 0;
+    }
+
+    .ft-tab-btn {
+        min-height: 48px;
+        font-size: 16px;
+        flex: 1;
+        justify-content: center;
+    }
+
+    .ft-tab-content {
+        padding: 16px 12px;
+    }
+
+    .ft-form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .ft-macro-preview {
+        grid-template-columns: 1fr;
+    }
+
+    .ft-macro-item.ft-macro-highlight {
+        grid-column: span 1;
+    }
+
+    .ft-incomplete-note {
+        grid-column: span 1;
+    }
+
+    .ft-submit-btn {
+        min-height: 48px;
+        font-size: 16px;
+    }
+
+    /* Prevent iOS auto-zoom on input focus */
+    .ft-modal input,
+    .ft-modal textarea,
+    .ft-modal select {
+        font-size: 16px !important;
+    }
+}

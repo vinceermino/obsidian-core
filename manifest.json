@@ -1,0 +1,10 @@
+{
+    "id": "core",
+    "name": "Core",
+    "version": "1.0.0",
+    "minAppVersion": "1.0.0",
+    "description": "Log workout sets and daily nutrition macros into your daily notes with auto-calculated totals and macro goals.",
+    "author": "Vince Ermino",
+    "authorUrl": "https://github.com/your-username",
+    "isDesktopOnly": false
+}
