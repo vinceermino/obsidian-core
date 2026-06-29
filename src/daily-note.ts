@@ -112,7 +112,14 @@ export class DailyNoteWriter {
                 weightDisplay = completedSets.map(s => `${s.weight}${unit}`).join(", ");
             }
 
-            rows.push(`| ${timeStr} | ${exercise.exerciseName} | ${setsDisplay} | ${weightDisplay} | ${notesStr} |`);
+            // Build notes: combine global notes, target muscle, and per-exercise notes
+            const notesParts: string[] = [];
+            if (exercise.targetMuscle) notesParts.push(exercise.targetMuscle);
+            if (exercise.notes) notesParts.push(exercise.notes);
+            if (notesStr) notesParts.push(notesStr);
+            const combinedNotes = notesParts.join(' · ');
+
+            rows.push(`| ${timeStr} | ${exercise.exerciseName} | ${setsDisplay} | ${weightDisplay} | ${combinedNotes} |`);
         }
 
         if (rows.length === 0) return;

@@ -13,13 +13,14 @@ export interface FoodEntry {
 
 // ── Workout Templates & Sessions ─────────────────────────────────────
 export interface TemplateSet {
-    reps: number;
+    targetReps: number;
     weight: number;
     rir?: number;
 }
 
 export interface TemplateExercise {
     exerciseName: string;
+    targetMuscle?: string;
     sets: TemplateSet[];
 }
 
@@ -30,6 +31,7 @@ export interface WorkoutTemplate {
 }
 
 export interface ActiveWorkoutSet {
+    targetReps?: number;
     reps: number;
     weight: number;
     rir?: number;
@@ -38,6 +40,8 @@ export interface ActiveWorkoutSet {
 
 export interface ActiveWorkoutExercise {
     exerciseName: string;
+    targetMuscle?: string;
+    notes?: string;
     sets: ActiveWorkoutSet[];
 }
 

@@ -62,6 +62,39 @@ export default class FitnessTrackerPlugin extends Plugin {
             DEFAULT_SETTINGS,
             await this.loadData()
         );
+
+        // ── Data migration: convert old `reps` → `targetReps` in templates ──
+        let migrated = false;
+        if (this.settings.workoutTemplates) {
+            for (const template of this.settings.workoutTemplates) {
+                for (const exercise of template.exercises) {
+                    for (const set of exercise.sets) {
+                        const s = set as any;
+                        if (s.targetReps === undefined && s.reps !== undefined) {
+                            s.targetReps = s.reps;
+                            delete s.reps;
+                            migrated = true;
+                        }
+                    }
+                }
+            }
+        }
+        // Also migrate activeWorkout if one is in progress
+        if (this.settings.activeWorkout) {
+            for (const exercise of this.settings.activeWorkout.exercises) {
+                for (const set of exercise.sets) {
+                    const s = set as any;
+                    if (s.targetReps === undefined && s.reps !== undefined) {
+                        // For active sets, keep reps as actual reps and copy to targetReps
+                        s.targetReps = s.reps;
+                        migrated = true;
+                    }
+                }
+            }
+        }
+        if (migrated) {
+            await this.saveData(this.settings);
+        }
     }
 
     async saveSettings(): Promise<void> {

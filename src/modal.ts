@@ -268,9 +268,11 @@ export class FitnessTrackerModal extends Modal {
                 editBtn.addEventListener("click", async () => {
                     const exercises: ActiveWorkoutExercise[] = template.exercises.map((ex: any) => ({
                         exerciseName: ex.exerciseName,
+                        targetMuscle: ex.targetMuscle,
                         sets: ex.sets.map((s: any) => ({
                             weight: s.weight,
-                            reps: s.reps,
+                            targetReps: s.targetReps || s.reps || 0,
+                            reps: s.targetReps || s.reps || 0,
                             rir: s.rir,
                             completed: false
                         }))
@@ -289,9 +291,12 @@ export class FitnessTrackerModal extends Modal {
                 btn.addEventListener("click", async () => {
                     const exercises: ActiveWorkoutExercise[] = template.exercises.map((ex: any) => ({
                         exerciseName: ex.exerciseName,
+                        targetMuscle: ex.targetMuscle,
                         sets: ex.sets.map((s: any) => ({
                             weight: s.weight,
-                            reps: s.reps,
+                            targetReps: s.targetReps || s.reps || 0,
+                            reps: 0,
+                            rir: s.rir,
                             completed: false
                         }))
                     }));
@@ -381,7 +386,11 @@ export class FitnessTrackerModal extends Modal {
         workout.exercises.forEach((exercise, exIndex) => {
             const exDiv = exercisesContainer.createDiv({ cls: "ft-exercise-block" });
             const exHeader = exDiv.createDiv({ cls: "ft-exercise-header" });
-            exHeader.createDiv({ text: exercise.exerciseName, cls: "ft-exercise-name" });
+            const nameDiv = exHeader.createDiv({ cls: "ft-exercise-name-group" });
+            nameDiv.createDiv({ text: exercise.exerciseName, cls: "ft-exercise-name" });
+            if (exercise.targetMuscle) {
+                nameDiv.createDiv({ text: exercise.targetMuscle, cls: "ft-exercise-muscle" });
+            }
             
             const removeExBtn = exHeader.createEl("button", { text: "X", cls: "ft-remove-ex-btn", title: "Remove Exercise" });
             removeExBtn.addEventListener("click", async () => {
@@ -419,7 +428,8 @@ export class FitnessTrackerModal extends Modal {
                 });
 
                 const repsCol = row.createDiv({ cls: "ft-col-reps" });
-                const repsInput = this.createNumberInput(repsCol, { min: "0", step: "1", placeholder: "0" });
+                const repsPlaceholder = set.targetReps ? String(set.targetReps) : "0";
+                const repsInput = this.createNumberInput(repsCol, { min: "0", step: "1", placeholder: repsPlaceholder });
                 repsInput.value = set.reps ? set.reps.toString() : "";
                 repsInput.addEventListener("input", () => {
                     set.reps = parseInt(repsInput.value) || 0;
@@ -455,6 +465,7 @@ export class FitnessTrackerModal extends Modal {
                 const prevSet = exercise.sets[exercise.sets.length - 1];
                 exercise.sets.push({
                     weight: prevSet ? prevSet.weight : 0,
+                    targetReps: prevSet ? prevSet.targetReps : undefined,
                     reps: prevSet ? prevSet.reps : 0,
                     rir: prevSet ? prevSet.rir : undefined,
                     completed: false
@@ -471,6 +482,14 @@ export class FitnessTrackerModal extends Modal {
                     this.renderWorkoutTab();
                 });
             }
+
+            // Per-exercise notes
+            const notesArea = exDiv.createEl("textarea", { cls: "ft-exercise-notes", attr: { placeholder: "Notes for this exercise...", rows: "2" } });
+            notesArea.value = exercise.notes || "";
+            notesArea.addEventListener("input", () => {
+                exercise.notes = notesArea.value;
+                this.plugin.saveSettings();
+            });
         });
 
         // Add Exercise
@@ -497,7 +516,8 @@ export class FitnessTrackerModal extends Modal {
                             name: templateName,
                             exercises: workout.exercises.map(ex => ({
                                 exerciseName: ex.exerciseName,
-                                sets: ex.sets.map(s => ({ reps: s.reps, weight: s.weight, rir: s.rir }))
+                                targetMuscle: ex.targetMuscle,
+                                sets: ex.sets.map(s => ({ targetReps: s.reps || s.targetReps || 0, weight: s.weight, rir: s.rir }))
                             }))
                         };
                         
@@ -593,7 +613,8 @@ export class FitnessTrackerModal extends Modal {
         if (this.settings.workoutTemplates && idx !== undefined && idx >= 0) {
             this.settings.workoutTemplates[idx].exercises = workout.exercises.map(ex => ({
                 exerciseName: ex.exerciseName,
-                sets: ex.sets.map(s => ({ reps: s.reps, weight: s.weight, rir: s.rir }))
+                targetMuscle: ex.targetMuscle,
+                sets: ex.sets.map(s => ({ targetReps: s.reps || s.targetReps || 0, weight: s.weight, rir: s.rir }))
             }));
             new Notice("Template updated!");
         }

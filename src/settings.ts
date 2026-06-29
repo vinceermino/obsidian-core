@@ -1,5 +1,5 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
-import { FitnessTrackerSettings, FoodEntry } from './types';
+import { FitnessTrackerSettings, FoodEntry, WorkoutTemplate, TemplateExercise, TemplateSet } from './types';
 
 interface FitnessTrackerPluginInterface {
     settings: FitnessTrackerSettings;
@@ -137,33 +137,8 @@ export class FitnessTrackerSettingTab extends PluginSettingTab {
             cls: 'setting-item-description',
         });
 
-        const templates = this.plugin.settings.workoutTemplates;
-
-        if (!templates || templates.length === 0) {
-            containerEl.createEl('p', {
-                text: 'No workout templates saved yet.',
-                cls: 'setting-item-description',
-            });
-        } else {
-            for (const template of templates) {
-                new Setting(containerEl)
-                    .setName(template.name)
-                    .setDesc(`${template.exercises.length} exercises`)
-                    .addButton((btn) =>
-                        btn
-                            .setButtonText('Delete')
-                            .setWarning()
-                            .onClick(async () => {
-                                this.plugin.settings.workoutTemplates =
-                                    this.plugin.settings.workoutTemplates.filter(
-                                        (t) => t.id !== template.id
-                                    );
-                                await this.plugin.saveSettings();
-                                this.display();
-                            })
-                    );
-            }
-        }
+        const templateContainer = containerEl.createDiv();
+        this.renderTemplateList(templateContainer);
 
         // ── 5. Exercise History ──────────────────────────────────────────
 
@@ -189,6 +164,7 @@ export class FitnessTrackerSettingTab extends PluginSettingTab {
                             .setButtonText('Delete')
                             .setWarning()
                             .onClick(async () => {
+                                if (!confirm(`Delete exercise "${name}"?`)) return;
                                 this.plugin.settings.exerciseHistory =
                                     this.plugin.settings.exerciseHistory.filter(
                                         (e) => e !== name
@@ -199,6 +175,184 @@ export class FitnessTrackerSettingTab extends PluginSettingTab {
                     );
             }
         }
+    }
+
+    // ── Template list rendering ──────────────────────────────────────────
+
+    private renderTemplateList(container: HTMLElement): void {
+        container.empty();
+        const templates = this.plugin.settings.workoutTemplates;
+
+        if (!templates || templates.length === 0) {
+            container.createEl('p', {
+                text: 'No workout templates saved yet.',
+                cls: 'setting-item-description',
+            });
+        } else {
+            for (const template of templates) {
+                const exerciseNames = template.exercises.map(e => e.exerciseName).join(', ') || 'No exercises';
+                new Setting(container)
+                    .setName(template.name)
+                    .setDesc(`${template.exercises.length} exercises: ${exerciseNames}`)
+                    .addButton((btn) =>
+                        btn.setButtonText('Edit').onClick(() => {
+                            this.renderTemplateEditor(container, template);
+                        })
+                    )
+                    .addButton((btn) =>
+                        btn
+                            .setButtonText('Delete')
+                            .setWarning()
+                            .onClick(async () => {
+                                if (!confirm(`Delete template "${template.name}"? This cannot be undone.`)) return;
+                                this.plugin.settings.workoutTemplates =
+                                    this.plugin.settings.workoutTemplates.filter(
+                                        (t) => t.id !== template.id
+                                    );
+                                await this.plugin.saveSettings();
+                                this.renderTemplateList(container);
+                            })
+                    );
+            }
+        }
+    }
+
+    // ── Template editor ──────────────────────────────────────────────────
+
+    private renderTemplateEditor(container: HTMLElement, template: WorkoutTemplate): void {
+        container.empty();
+
+        // Deep clone so edits don't persist until Save
+        const draft: WorkoutTemplate = JSON.parse(JSON.stringify(template));
+
+        const editorEl = container.createDiv({ cls: 'ft-tpl-editor' });
+
+        // ── Header with name input ──
+        const headerEl = editorEl.createDiv({ cls: 'ft-tpl-editor-header' });
+        headerEl.createEl('label', { text: 'Routine Name', attr: { style: 'font-weight: 600; font-size: 14px; display: block; margin-bottom: 4px;' } });
+        const nameInput = headerEl.createEl('input', { type: 'text', cls: 'ft-tpl-input-name' });
+        nameInput.value = draft.name;
+        nameInput.placeholder = 'Template name';
+        nameInput.addEventListener('input', () => { draft.name = nameInput.value.trim(); });
+
+        // ── Exercises ──
+        const exercisesEl = editorEl.createDiv({ cls: 'ft-tpl-exercises' });
+        this.renderTemplateExercises(exercisesEl, draft);
+
+        // ── Save / Cancel buttons ──
+        const actionsEl = editorEl.createDiv({ attr: { style: 'display: flex; gap: 8px; margin-top: 16px;' } });
+        const saveBtn = actionsEl.createEl('button', { text: 'Save', cls: 'mod-cta' });
+        saveBtn.style.flex = '1';
+        saveBtn.addEventListener('click', async () => {
+            if (!draft.name) return;
+            const idx = this.plugin.settings.workoutTemplates.findIndex(t => t.id === draft.id);
+            if (idx >= 0) {
+                this.plugin.settings.workoutTemplates[idx] = draft;
+            }
+            await this.plugin.saveSettings();
+            this.renderTemplateList(container);
+        });
+
+        const cancelBtn = actionsEl.createEl('button', { text: 'Cancel' });
+        cancelBtn.style.flex = '1';
+        cancelBtn.addEventListener('click', () => {
+            this.renderTemplateList(container);
+        });
+    }
+
+    private renderTemplateExercises(container: HTMLElement, draft: WorkoutTemplate): void {
+        container.empty();
+
+        if (draft.exercises.length === 0) {
+            container.createEl('p', {
+                text: 'No exercises yet. Add one below.',
+                cls: 'setting-item-description',
+            });
+        }
+
+        draft.exercises.forEach((exercise, exIdx) => {
+            const card = container.createDiv({ cls: 'ft-tpl-ex-card' });
+
+            // ── Exercise header row: name + muscle + remove ──
+            const topRow = card.createDiv({ cls: 'ft-tpl-ex-top' });
+            const fieldsDiv = topRow.createDiv({ cls: 'ft-tpl-ex-fields' });
+            
+            const nameInput = fieldsDiv.createEl('input', { type: 'text', cls: 'ft-tpl-ex-name-input' });
+            nameInput.value = exercise.exerciseName;
+            nameInput.placeholder = 'Exercise name';
+            nameInput.addEventListener('input', () => { exercise.exerciseName = nameInput.value.trim(); });
+
+            const muscleInput = fieldsDiv.createEl('input', { type: 'text', cls: 'ft-tpl-ex-muscle-input' });
+            muscleInput.value = exercise.targetMuscle || '';
+            muscleInput.placeholder = 'Target muscle (e.g. Chest)';
+            muscleInput.addEventListener('input', () => { exercise.targetMuscle = muscleInput.value.trim() || undefined; });
+
+            const removeBtn = topRow.createEl('button', { text: '✕', cls: 'ft-tpl-remove-btn' });
+            removeBtn.title = 'Remove exercise';
+            removeBtn.addEventListener('click', () => {
+                if (!confirm(`Remove "${exercise.exerciseName || 'Untitled'}"?`)) return;
+                draft.exercises.splice(exIdx, 1);
+                this.renderTemplateExercises(container, draft);
+            });
+
+            // ── Sets table header ──
+            const setsDiv = card.createDiv({ cls: 'ft-tpl-sets' });
+            const setsHeader = setsDiv.createDiv({ cls: 'ft-tpl-set-row ft-tpl-set-header' });
+            setsHeader.createDiv({ text: 'Set', cls: 'ft-tpl-col-num' });
+            setsHeader.createDiv({ text: 'Target Reps', cls: 'ft-tpl-col-reps' });
+            setsHeader.createDiv({ text: `Weight (${this.plugin.settings.weightUnit})`, cls: 'ft-tpl-col-weight' });
+            setsHeader.createDiv({ text: '', cls: 'ft-tpl-col-action' });
+
+            // ── Set rows ──
+            exercise.sets.forEach((set, setIdx) => {
+                const row = setsDiv.createDiv({ cls: 'ft-tpl-set-row' });
+                
+                row.createDiv({ text: `${setIdx + 1}`, cls: 'ft-tpl-col-num' });
+                
+                const repsInput = row.createDiv({ cls: 'ft-tpl-col-reps' }).createEl('input', { type: 'number', attr: { min: '0', step: '1', inputmode: 'decimal' } });
+                repsInput.value = String(set.targetReps || (set as any).reps || 0);
+                repsInput.addEventListener('input', () => {
+                    const n = Number(repsInput.value);
+                    if (!isNaN(n)) set.targetReps = n;
+                });
+
+                const weightInput = row.createDiv({ cls: 'ft-tpl-col-weight' }).createEl('input', { type: 'number', attr: { min: '0', step: '0.5', inputmode: 'decimal' } });
+                weightInput.value = String(set.weight || 0);
+                weightInput.addEventListener('input', () => {
+                    const n = Number(weightInput.value);
+                    if (!isNaN(n)) set.weight = n;
+                });
+
+                const removeSetBtn = row.createDiv({ cls: 'ft-tpl-col-action' }).createEl('button', { text: '✕', cls: 'ft-tpl-remove-set-btn' });
+                removeSetBtn.addEventListener('click', () => {
+                    exercise.sets.splice(setIdx, 1);
+                    this.renderTemplateExercises(container, draft);
+                });
+            });
+
+            // ── Add set button ──
+            const addSetBtn = setsDiv.createEl('button', { text: '+ Add Set', cls: 'ft-tpl-add-set-btn' });
+            addSetBtn.addEventListener('click', () => {
+                const lastSet = exercise.sets[exercise.sets.length - 1];
+                exercise.sets.push({
+                    targetReps: lastSet ? lastSet.targetReps : 10,
+                    weight: lastSet ? lastSet.weight : 0,
+                    rir: lastSet ? lastSet.rir : undefined,
+                });
+                this.renderTemplateExercises(container, draft);
+            });
+        });
+
+        // ── Add exercise button ──
+        const addExBtn = container.createEl('button', { text: '+ Add Exercise', cls: 'ft-tpl-add-ex-btn' });
+        addExBtn.addEventListener('click', () => {
+            draft.exercises.push({
+                exerciseName: '',
+                targetMuscle: undefined,
+                sets: [{ targetReps: 10, weight: 0 }],
+            });
+            this.renderTemplateExercises(container, draft);
+        });
     }
 
     // ── Food list rendering ──────────────────────────────────────────────
@@ -233,6 +387,7 @@ export class FitnessTrackerSettingTab extends PluginSettingTab {
                             .setButtonText('Delete')
                             .setWarning()
                             .onClick(async () => {
+                                if (!confirm(`Delete food "${food.name}"?`)) return;
                                 this.plugin.settings.foodDatabase.splice(i, 1);
                                 await this.plugin.saveSettings();
                                 this.renderFoodList(container);
